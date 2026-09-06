@@ -1,0 +1,56 @@
+[project]
+name = "cortexframe"
+version = "0.1.0"
+description = "CortexFrame: fUSI acquisition system with napari viewer."
+readme = "README.md"
+requires-python = ">=3.11,<3.12"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Framework :: napari",
+    "Intended Audience :: Science/Research",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+]
+dependencies = [
+    "matlabengine>=24.1,<24.2",
+    "napari[all]>=0.9.0",
+    "numpy>=1.24",
+    "platformdirs>=3.0",
+    "pyserial>=3.5",
+    "tomli-w>=1.0",
+]
+
+[project.scripts]
+cortexframe = "cortexframe.cli:main"
+
+[project.entry-points."napari.manifest"]
+cortexframe = "cortexframe:napari.yaml"
+
+[build-system]
+requires = ["uv_build>=0.9.5,<0.10.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "mkdocstrings[python]>=1.0.3",
+    "mkdocstrings-matlab>=2.1.0",
+    "prek>=0.3.6",
+    "ty>=0.0.61",
+    "zensical>=0.0.51",
+]
+
+[tool.numpydoc_validation]
+exclude = [
+    '\.__init__$',
+    '\._.*$',
+]
+checks = [
+    "all",  # Report on all checks, except the below
+    "GL01",
+    "ES01",
+    "SA01",
+    "EX01",
+]
+numpydoc_validation_checks = ["all", "GL01", "ES01", "SA01", "EX01"]

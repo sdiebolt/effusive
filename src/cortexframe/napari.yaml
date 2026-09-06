@@ -1,0 +1,10 @@
+name: cortexframe
+display_name: CortexFrame
+contributions:
+  commands:
+    - id: cortexframe.make_main_widget
+      title: Open CortexFrame
+      python_name: cortexframe.napari.plugin:make_main_widget
+  widgets:
+    - command: cortexframe.make_main_widget
+      display_name: CortexFrame

@@ -1,0 +1,14 @@
+{
+    "title": "Experiment Preset Parameters",
+    "_comment1": "This file contains parameters for the experiment setup",
+    "_comment2": "All values are in their respective units",
+    "Initial Voltage": 1.6,
+    "Extra voxels z": 0,
+    "Extra voxels x": 0,
+    "Transmit Aperture Percentage": 70,
+    "Receive Aperture Percentage": 100,
+    "ROI Top": 80,
+    "ROI Bottom": 216,
+    "ROI Left": 20,
+    "ROI Right": 108
+}
