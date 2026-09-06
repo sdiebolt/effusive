@@ -1,0 +1,10 @@
+name: effusive
+display_name: Effusive
+contributions:
+  commands:
+    - id: effusive.make_main_widget
+      title: Open Effusive
+      python_name: effusive.napari.plugin:make_main_widget
+  widgets:
+    - command: effusive.make_main_widget
+      display_name: Effusive

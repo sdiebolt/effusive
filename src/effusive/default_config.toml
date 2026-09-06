@@ -1,0 +1,63 @@
+probe_names = ["L22-14v", "L35-16vX", "MiniProbe"]
+
+[system]
+default_probe = "L22-14v"
+storage_path = "/tmp/effusive"
+matlab_root = ""
+vantage_root = ""
+echoframe_mex_root = ""
+simulate_mode = true
+udp_control_enabled = true
+udp_control_port = 1025
+
+[probe_defaults.L22-14v]
+transmit_frequency_mhz = 15.625
+txrx_frame_rate_hz = 15000
+n_transmissions = 30
+n_repeats = 300
+planewave_opening_angle_deg = 20
+
+[probe_defaults.L35-16vX]
+transmit_frequency_mhz = 26.7857
+txrx_frame_rate_hz = 12000
+n_transmissions = 16
+n_repeats = 197
+planewave_opening_angle_deg = 10
+
+[probe_defaults.MiniProbe]
+transmit_frequency_mhz = 15.625
+txrx_frame_rate_hz = 15000
+n_transmissions = 30
+n_repeats = 300
+planewave_opening_angle_deg = 20
+
+[sequence]
+transmit_pulse_length = 3
+imaging_depth_mm = 12.0
+
+[acquisition]
+voltage_v = 1.6
+tx_aperture_percent = 100
+rx_aperture_percent = 100
+svd_threshold_percent = 40
+tgc_control_points = [900, 900, 900, 900, 900, 900, 900, 900]
+tgc_all_gain = 0.0
+
+[stack]
+step_mm = 0.100
+n_slices = 10
+frames_per_slice = 10
+settle_ms = 100
+motor_min_mm = 0.0
+motor_max_mm = 50.8
+
+[bids]
+subject = "01"
+session = "01"
+task = "awake"
+acq = ""
+proc = ""
+run = 1
+
+[crop]
+vertices = []
