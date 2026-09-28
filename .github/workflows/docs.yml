@@ -1,39 +1,51 @@
-name: Build and deploy documentation
+name: Docs
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.11"
+      - run: uv sync --frozen --group dev
+      - run: uv run zensical build --clean --strict
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site-${{ github.sha }}
+          path: site/
+          retention-days: 14
+
   deploy:
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: site-${{ github.sha }}
+          path: site/
       - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
         with:
-          enablement: true
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v5
-        with:
-          python-version: 3.13
-      - uses: astral-sh/setup-uv@v5
-        with:
-          version: "latest"
-      - run: uv pip install --system "mkdocstrings[python]==1.0.3" "mkdocstrings-matlab==2.1.0" "zensical==0.0.43"
-      - run: uv pip install --system --no-deps "pygments @ git+https://github.com/watermarkhu/pygments.git@matlab"
-      - run: zensical build --clean --strict
-      - name: Check build output
-        run: ls -la site/
-      - uses: actions/upload-pages-artifact@v4
-        with:
-          path: site
+          path: site/
       - uses: actions/deploy-pages@v4
         id: deployment
