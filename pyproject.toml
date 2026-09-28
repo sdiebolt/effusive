@@ -38,7 +38,7 @@ dev = [
     "mkdocstrings-matlab>=2.1.0",
     "prek>=0.3.6",
     "ty>=0.0.61",
-    "zensical>=0.0.51",
+    "zensical>=0.0.66",
 ]
 
 [tool.numpydoc_validation]

@@ -31,7 +31,7 @@ function freezeCheck(~, ~)
             return
         end
     end
-    
+
     try
         % Read command bytes from cf_cmd.
         cmd = uint8(py.array.array('B', sharedMemoryCmd.buf));
@@ -57,5 +57,3 @@ function freezeCheck(~, ~)
         effusive.util.logMessage('Freeze control read error: %s', ME.message);
     end
 end
-
-

@@ -1,10 +1,14 @@
 [project]
 site_name = "Effusive"
-site_description = "MATLAB package for fUSI acquisition at the Cortexlab."
+site_url = "https://sdiebolt.github.io/effusive/"
+site_description = "Acquisition and control application for functional ultrasound imaging data."
 site_author = "Samuel Le Meur-Diebolt"
-copyright = """Copyright &copy; 2026 Samuel Le Meur-Diebolt"""
-repo_url = "https://github.com/sdiebolt/Effusive"
-repo_name = "sdiebolt/Effusive"
+copyright = "Copyright © 2026 The Effusive developers"
+docs_dir = "docs"
+site_dir = "site"
+repo_url = "https://github.com/sdiebolt/effusive"
+repo_name = "sdiebolt/effusive"
+edit_uri = "edit/main/docs/"
 extra_css = ["stylesheets/extra.css"]
 extra_javascript = [
     "javascripts/mathjax.js",
@@ -42,10 +46,31 @@ nav = [
 ]
 
 
-# ----------------------------------------------------------------------------
-# Section for configuring theme options
-# ----------------------------------------------------------------------------
+[project.extra.version]
+provider = "mike"
+default = "latest"
+alias = true
+
+[[project.extra.social]]
+icon = "fontawesome/brands/github"
+link = "https://github.com/sdiebolt/effusive"
+name = "Effusive on GitHub"
+
+[[project.extra.social]]
+icon = "fontawesome/brands/python"
+link = "https://pypi.org/project/effusive/"
+name = "Effusive on PyPI"
+
+[[project.extra.social]]
+icon = "fontawesome/brands/discord"
+link = "https://discord.gg/mZd87tgmy2"
+name = "Functional Ultrasound Imaging on Discord"
+
+[project.validation]
+unresolved_references = false
+
 [project.theme]
+variant = "modern"
 language = "en"
 features = [
     "navigation.tabs",
@@ -71,20 +96,18 @@ features = [
 repo = "fontawesome/brands/github"
 
 [[project.theme.palette]]
-media = "(prefers-color-scheme: light)"
-scheme = "default"
-primary = "custom"
-accent = "custom"
-toggle.icon = "lucide/sun"
-toggle.name = "Switch to dark mode"
-
-[[project.theme.palette]]
-media = "(prefers-color-scheme: dark)"
 scheme = "slate"
 primary = "custom"
 accent = "custom"
 toggle.icon = "lucide/moon"
 toggle.name = "Switch to light mode"
+
+[[project.theme.palette]]
+scheme = "default"
+primary = "custom"
+accent = "custom"
+toggle.icon = "lucide/sun"
+toggle.name = "Switch to dark mode"
 
 [project.plugins.mkdocstrings]
 default_handler = "matlab"
@@ -113,6 +136,7 @@ show_if_no_docstring = false
 show_signature = true
 show_signature_annotations = true
 signature_crossrefs = true
+annotations_path = "brief"
 show_symbol_type_toc = true
 inherited_members = true
 parameter_headings = true
@@ -146,7 +170,10 @@ heading_level = 2
 summary = true
 
 [project.markdown_extensions.zensical.extensions.glightbox]
+auto = true
+auto_themed = true
 auto_caption = true
+skip_classes = ["hero-logo", "md-logo", "skip-lightbox"]
 
 [project.markdown_extensions.admonition]
 
