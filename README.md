@@ -2,10 +2,14 @@
 [![Python versions](https://img.shields.io/pypi/pyversions/effusive?style=flat-square&color=0099e5&logo=python&logoColor=white)](https://pypi.org/project/effusive/)
 [![License](https://img.shields.io/github/license/sdiebolt/effusive?style=flat-square&color=3ad9a4)](https://github.com/sdiebolt/effusive/blob/main/LICENSE)
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.22555686-8b7ff7?style=flat-square)](https://doi.org/10.5281/zenodo.22555686)
-[![Docs](https://img.shields.io/github/actions/workflow/status/sdiebolt/effusive/docs.yml?branch=main&style=flat-square&label=docs)](https://sdiebolt.github.io/effusive/)
 [![Discord](https://img.shields.io/badge/Discord-join-5865F2?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/mZd87tgmy2)
 
 # Effusive
+
+> [!WARNING]
+> **Alpha status** — Effusive is in alpha and under active development. Use it at your
+> own risk, especially on acquisition hardware. If you want to start experimenting with
+> it, please contact the maintainers.
 
 Effusive is an open-source acquisition and control application for functional ultrasound
 imaging (fUSI) on Verasonics Vantage systems. It provides a napari-based interface for
@@ -13,10 +17,6 @@ configuring acquisitions, visualizing B-mode and power Doppler images in real ti
 recording fUSI data. Effusive builds on
 [EchoFrame](https://github.com/BrainEchoLab/EchoFrame) for high-performance ultrasound
 beamforming and acquisition.
-
-> [!WARNING]
-> Effusive is alpha software. Use it at your own risk, especially on acquisition
-> hardware. If you want to start experimenting with it, please contact the maintainers.
 
 ## Requirements
 
