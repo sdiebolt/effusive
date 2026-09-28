@@ -326,7 +326,10 @@ def check_bids_run_collision(
         return False
 
     if datatype == FUSI_DATATYPE:
-        return any((bids_dir / f"{stem}_{suffix}").exists() for suffix in FUSI_RECORDING_SUFFIXES)
+        return any(
+            (bids_dir / f"{stem}_{suffix}").exists()
+            for suffix in FUSI_RECORDING_SUFFIXES
+        )
 
     return any(bids_dir.glob(f"{stem}_*"))
 
