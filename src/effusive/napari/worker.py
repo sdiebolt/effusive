@@ -53,6 +53,7 @@ def build_worker_config(widget: "EffusiveWidget") -> dict:
     config["nRepeats"] = sp._ensemble_slider.value()
     config["planewaveOpeningAngle"] = sp._angle_slider.value()
     config["desiredEndDepthMm"] = sp._depth_slider.value() / 10.0
+    config["beamformerType"] = widget._config.system.beamformer
     config["tgcGain"] = tgc_points[0]
     config["tgcControlPoints"] = tgc_points
     config["storagePath"] = widget._metadata_panel._storage_edit.text()

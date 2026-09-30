@@ -76,6 +76,8 @@ class SystemConfig:
         Optional Vantage (Verasonics) installation root override.
     echoframe_mex_root : str
         Optional EchoFrame runtime-MEX files directory override.
+    beamformer : str
+        EchoFrame beamformer selected at startup (`Fourier` or `DAS`).
     simulate_mode : bool
         Whether simulate mode is on at startup.
     udp_control_enabled : bool
@@ -89,6 +91,7 @@ class SystemConfig:
     matlab_root: str = ""
     vantage_root: str = ""
     echoframe_mex_root: str = ""
+    beamformer: str = "Fourier"
     simulate_mode: bool = True
     udp_control_enabled: bool = True
     udp_control_port: int = 1025
@@ -321,6 +324,7 @@ def _config_to_dict(config: EffusiveConfig) -> dict:
             "matlab_root": config.system.matlab_root,
             "vantage_root": config.system.vantage_root,
             "echoframe_mex_root": config.system.echoframe_mex_root,
+            "beamformer": config.system.beamformer,
             "simulate_mode": config.system.simulate_mode,
             "udp_control_enabled": config.system.udp_control_enabled,
             "udp_control_port": config.system.udp_control_port,
@@ -480,6 +484,7 @@ def update_config_from_widget(widget: "EffusiveWidget") -> None:
             widget._system_panel._udp_enable_checkbox.isChecked()
         )
         cfg.system.udp_control_port = widget._system_panel._udp_port_spinbox.value()
+        cfg.system.beamformer = widget._system_panel._beamformer_combo.currentText()
     if hasattr(widget, "_sequence_panel"):
         cfg.system.default_probe = widget._sequence_panel._probe_combo.currentText()
     if hasattr(widget, "_system_panel"):
