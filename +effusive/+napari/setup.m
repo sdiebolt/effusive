@@ -26,6 +26,7 @@ function setup()
 % - `nRepeats` (double): Ensemble size.
 % - `planewaveOpeningAngle` (double): Total steering angle range [deg].
 % - `desiredEndDepthMm` (double): Imaging depth [mm].
+% - `beamformerType` (char): EchoFrame beamformer, `'Fourier'` or `'DAS'`.
 % - `tgcGain` (double): Initial TGC gain.
 % - `tgcControlPoints` (double): Initial Verasonics TGC control points.
 % - `simulateMode` (double): `0` for real hardware, `1` for Media
@@ -90,6 +91,11 @@ function setup()
     nRepeats                    = evalin('base', 'nRepeats');
     opening_angle               = evalin('base', 'planewaveOpeningAngle');
     desiredEndDepthMm           = evalin('base', 'desiredEndDepthMm');
+    if evalin('base', 'exist(''beamformerType'', ''var'') == 1')
+        beamformerType = char(evalin('base', 'beamformerType'));
+    else
+        beamformerType = 'Fourier';
+    end
     tgcGain                     = evalin('base', 'tgcGain');
     tgcControlPoints            = evalin('base', 'tgcControlPoints');
     simulateMode                = evalin('base', 'simulateMode');
@@ -259,8 +265,9 @@ function setup()
 
     %% Initialize EchoFrame image reconstruction.
     effusive.util.logMessage('Initializing image reconstruction...');
-    ReconSpec.method = 'Fourier';
-    ReconSpec.bfDataType          = 'single';
+    ReconSpec.method = beamformerType;
+    ReconSpec.beamformerType = beamformerType;
+    ReconSpec.bfDataType          = 'complex single';
     ReconSpec.filterFrequencies   = logical(false);
     ReconSpec.nDims               = 2;
     ReconSpec.getBF               = logical(true);

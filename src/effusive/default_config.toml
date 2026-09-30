@@ -6,6 +6,7 @@ storage_path = "/tmp/effusive"
 matlab_root = ""
 vantage_root = ""
 echoframe_mex_root = ""
+beamformer = "Fourier"
 simulate_mode = true
 udp_control_enabled = true
 udp_control_port = 1025
