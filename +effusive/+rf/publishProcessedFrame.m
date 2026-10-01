@@ -117,7 +117,7 @@ function publishProcessedFrame()
         FrameRuntimeState.publishRfSnapshot = false;
     end
 
-    % Update cf_meta runtime fields; setup-owned bytes after 44 are preserved.
+    % Update cf_meta: frame counter, runtime flags, and ensemble time tag.
     storeEchoFrameOutput = evalin('base', 'storeEchoFrameOutput');
     freezeActive         = logical(evalin('base', 'freeze'));
     BidsRuntimeState     = evalin('base', 'BidsRuntimeState');

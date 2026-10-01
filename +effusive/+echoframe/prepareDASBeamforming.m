@@ -70,13 +70,7 @@ function ReconSpec = prepareDASBeamforming(ProbeSpec, TransmitSpec, ReceiveSpec,
     ReconSpec.dasWavenum = single(4 * pi * double(ProbeSpec.Fc) / double(ReceiveSpec.Fs));
     ReconSpec.dasAlgorithm = int32(1);
     ReconSpec.dasComputeType = int32(0);
-    if isfield(ReconSpec, 'dasFNumberAuto') && ReconSpec.dasFNumberAuto
-        fNumber = directivityFNumber(ProbeSpec, ReconSpec);
-    elseif isfield(ReconSpec, 'dasFNumber') && ~isempty(ReconSpec.dasFNumber)
-        fNumber = double(ReconSpec.dasFNumber);
-    else
-        fNumber = 0.71;
-    end
+    fNumber = directivityFNumber(ProbeSpec, ReconSpec);
     coneAngleDeg = rad2deg(atan(1 / (2 * fNumber)));
     ReconSpec.dasFNumber = single(fNumber);
     ReconSpec.dasSourceDirections = single(repmat([0; 0; 1; cosd(coneAngleDeg)], 1, nActive));

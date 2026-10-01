@@ -59,10 +59,6 @@ def build_worker_config(widget: "EffusiveWidget") -> dict:
     config["beamformerType"] = str(
         widget._reconstruction_panel._beamformer_combo.currentData()
     )
-    config["dasFNumberAuto"] = (
-        widget._reconstruction_panel._das_auto_checkbox.isChecked()
-    )
-    config["dasFNumber"] = widget._reconstruction_panel._das_f_number_spinbox.value()
     config["tgcGain"] = tgc_points[0]
     config["tgcControlPoints"] = tgc_points
     config["storagePath"] = widget._metadata_panel._storage_edit.text()
