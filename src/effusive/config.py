@@ -78,10 +78,6 @@ class SystemConfig:
         Optional EchoFrame runtime-MEX files directory override.
     beamformer : str
         EchoFrame beamformer selected at startup (`Fourier` or `DAS`).
-    das_f_number_auto : bool
-        Whether DAS receive f-number is computed from probe metadata.
-    das_f_number : float
-        Manual DAS receive f-number.
     simulate_mode : bool
         Whether simulate mode is on at startup.
     udp_control_enabled : bool
@@ -96,8 +92,6 @@ class SystemConfig:
     vantage_root: str = ""
     echoframe_mex_root: str = ""
     beamformer: str = "Fourier"
-    das_f_number_auto: bool = False
-    das_f_number: float = 0.71
     simulate_mode: bool = True
     udp_control_enabled: bool = True
     udp_control_port: int = 1025
@@ -296,11 +290,10 @@ def _config_from_dict(data: dict) -> EffusiveConfig:
 
     system_data = dict(default_data.get("system", {}))
     system_data.update(data.get("system", {}))
-    if "das_cone_angle_auto" in system_data:
-        system_data["das_f_number_auto"] = system_data.pop("das_cone_angle_auto")
-    if "das_cone_angle_deg" in system_data:
-        angle_rad = system_data.pop("das_cone_angle_deg") * 3.141592653589793 / 180.0
-        system_data["das_f_number"] = 1.0 / (2.0 * math.tan(angle_rad))
+    system_data.pop("das_cone_angle_auto", None)
+    system_data.pop("das_cone_angle_deg", None)
+    system_data.pop("das_f_number_auto", None)
+    system_data.pop("das_f_number", None)
 
     sequence_data = dict(default_data.get("sequence", {}))
     sequence_data.update(data.get("sequence", {}))
@@ -345,8 +338,6 @@ def _config_to_dict(config: EffusiveConfig) -> dict:
             "vantage_root": config.system.vantage_root,
             "echoframe_mex_root": config.system.echoframe_mex_root,
             "beamformer": config.system.beamformer,
-            "das_f_number_auto": config.system.das_f_number_auto,
-            "das_f_number": config.system.das_f_number,
             "simulate_mode": config.system.simulate_mode,
             "udp_control_enabled": config.system.udp_control_enabled,
             "udp_control_port": config.system.udp_control_port,
@@ -510,9 +501,6 @@ def update_config_from_widget(widget: "EffusiveWidget") -> None:
     if hasattr(widget, "_reconstruction_panel"):
         rp = widget._reconstruction_panel
         cfg.system.beamformer = str(rp._beamformer_combo.currentData())
-        cfg.system.das_f_number_auto = rp._das_auto_checkbox.isChecked()
-        if not cfg.system.das_f_number_auto:
-            cfg.system.das_f_number = rp._das_f_number_spinbox.value()
     if hasattr(widget, "_sequence_panel"):
         cfg.system.default_probe = widget._sequence_panel._probe_combo.currentText()
     if hasattr(widget, "_system_panel"):

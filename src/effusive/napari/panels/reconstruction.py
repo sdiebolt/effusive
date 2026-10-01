@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import (
-    QCheckBox,
     QComboBox,
     QDoubleSpinBox,
     QFormLayout,
@@ -63,7 +62,7 @@ class ReconstructionPanel(QWidget):
 
         self._beamformer_combo = QComboBox()
         self._beamformer_combo.addItem("Fourier", "Fourier")
-        self._beamformer_combo.addItem("Delay-and-sum", "DAS")
+        self._beamformer_combo.addItem("DAS", "DAS")
         index = self._beamformer_combo.findData(widget._config.system.beamformer)
         self._beamformer_combo.setCurrentIndex(max(index, 0))
         self._beamformer_combo.setToolTip(
@@ -80,7 +79,9 @@ class ReconstructionPanel(QWidget):
         self._speed_of_sound_spinbox.setDecimals(1)
         self._speed_of_sound_spinbox.setSingleStep(1.0)
         self._speed_of_sound_spinbox.setSuffix(" m/s")
-        self._speed_of_sound_spinbox.setValue(widget._config.sequence.speed_of_sound_m_s)
+        self._speed_of_sound_spinbox.setValue(
+            widget._config.sequence.speed_of_sound_m_s
+        )
         self._speed_of_sound_spinbox.setToolTip(
             "Speed of sound used for sequence timing and reconstruction."
         )
@@ -90,30 +91,6 @@ class ReconstructionPanel(QWidget):
         speed_label = QLabel("Speed of sound:")
         self._run_locked_labels.append(speed_label)
         beamforming_form.addRow(speed_label, self._speed_of_sound_spinbox)
-
-        self._das_auto_checkbox = QCheckBox("Auto from probe")
-        self._das_auto_checkbox.setChecked(widget._config.system.das_f_number_auto)
-        self._das_auto_checkbox.setToolTip(
-            "Use the -3 dB piston-element directivity cutoff from Perrot et al."
-        )
-        self._das_auto_checkbox.toggled.connect(self._on_das_auto_changed)
-        self._das_auto_label = QLabel("DAS aperture:")
-        self._run_locked_labels.append(self._das_auto_label)
-        beamforming_form.addRow(self._das_auto_label, self._das_auto_checkbox)
-
-        self._das_f_number_spinbox = QDoubleSpinBox()
-        self._das_f_number_spinbox.setRange(0.1, 10.0)
-        self._das_f_number_spinbox.setDecimals(2)
-        self._das_f_number_spinbox.setSingleStep(0.05)
-        self._das_f_number_spinbox.setValue(widget._config.system.das_f_number)
-        self._das_f_number_spinbox.setToolTip(
-            "Manual DAS receive f-number. 0.71 matches the original 35° EchoFrame default."
-        )
-        self._das_f_number_spinbox.valueChanged.connect(self._on_das_f_number_changed)
-        self._das_f_number_label = QLabel("Receive f-number:")
-        self._run_locked_labels.append(self._das_f_number_label)
-        beamforming_form.addRow(self._das_f_number_label, self._das_f_number_spinbox)
-        self._refresh_beamformer_params()
         layout.addWidget(beamforming_group)
 
         clutter_group = QGroupBox("Clutter filter")
@@ -154,7 +131,6 @@ class ReconstructionPanel(QWidget):
         self._widget._config.system.beamformer = str(
             self._beamformer_combo.currentData()
         )
-        self._refresh_beamformer_params()
         cf_config.save_config(self._widget._config)
 
     def _on_speed_of_sound_changed(self, value: float) -> None:
@@ -168,59 +144,6 @@ class ReconstructionPanel(QWidget):
         self._widget._config.sequence.speed_of_sound_m_s = float(value)
         cf_config.save_config(self._widget._config)
 
-    def _on_das_auto_changed(self, checked: bool) -> None:
-        """Persist the automatic DAS f-number toggle.
-
-        Parameters
-        ----------
-        checked : bool
-            Whether EchoFrame should compute the DAS receive f-number from probe metadata.
-        """
-        self._widget._config.system.das_f_number_auto = bool(checked)
-        if not checked:
-            self._das_f_number_spinbox.blockSignals(True)
-            self._das_f_number_spinbox.setValue(
-                self._widget._config.system.das_f_number
-            )
-            self._das_f_number_spinbox.blockSignals(False)
-        self._refresh_beamformer_params()
-        cf_config.save_config(self._widget._config)
-
-    def _on_das_f_number_changed(self, value: float) -> None:
-        """Persist the manual DAS receive f-number.
-
-        Parameters
-        ----------
-        value : float
-            Manual DAS receive f-number.
-        """
-        self._widget._config.system.das_f_number = float(value)
-        cf_config.save_config(self._widget._config)
-
-    def _refresh_beamformer_params(self) -> None:
-        """Show only the parameter note matching the selected beamformer."""
-        is_das = self._beamformer_combo.currentData() == "DAS"
-        auto = self._das_auto_checkbox.isChecked()
-        self._das_auto_label.setVisible(is_das)
-        self._das_auto_checkbox.setVisible(is_das)
-        self._das_f_number_label.setVisible(is_das)
-        self._das_f_number_spinbox.setVisible(is_das)
-        self._das_f_number_spinbox.setEnabled(is_das and not auto)
-
-    def set_effective_das_f_number(self, value: float) -> None:
-        """Show the effective DAS receive f-number reported by MATLAB setup.
-
-        Parameters
-        ----------
-        value : float
-            Effective DAS receive f-number in degrees.
-        """
-        if value <= 0 or value != value:
-            return
-        self._das_f_number_spinbox.blockSignals(True)
-        self._das_f_number_spinbox.setValue(value)
-        self._das_f_number_spinbox.blockSignals(False)
-
     def lock_for_run(self, locked: bool) -> None:
         """Enable or disable startup-only reconstruction controls.
 
@@ -229,11 +152,8 @@ class ReconstructionPanel(QWidget):
         locked : bool
             Whether controls that require a restart should be disabled.
         """
-        auto = self._das_auto_checkbox.isChecked()
         self._beamformer_combo.setEnabled(not locked)
         self._speed_of_sound_spinbox.setEnabled(not locked)
-        self._das_auto_checkbox.setEnabled(not locked)
-        self._das_f_number_spinbox.setEnabled(not locked and not auto)
         controls.set_control_labels_locked(self._run_locked_labels, locked)
 
     def lock_for_recording(self, locked: bool) -> None:

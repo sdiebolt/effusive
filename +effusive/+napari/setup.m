@@ -28,8 +28,6 @@ function setup()
 % - `desiredEndDepthMm` (double): Imaging depth [mm].
 % - `speedOfSound` (double): Speed of sound [m/s].
 % - `beamformerType` (char): EchoFrame beamformer, `'Fourier'` or `'DAS'`.
-% - `dasFNumberAuto` (logical): Compute DAS receive f-number from probe metadata.
-% - `dasFNumber` (double): Manual DAS receive f-number.
 % - `tgcGain` (double): Initial TGC gain.
 % - `tgcControlPoints` (double): Initial Verasonics TGC control points.
 % - `simulateMode` (double): `0` for real hardware, `1` for Media
@@ -103,16 +101,6 @@ function setup()
         beamformerType = char(evalin('base', 'beamformerType'));
     else
         beamformerType = 'Fourier';
-    end
-    if evalin('base', 'exist(''dasFNumberAuto'', ''var'') == 1')
-        dasFNumberAuto = logical(evalin('base', 'dasFNumberAuto'));
-    else
-        dasFNumberAuto = false;
-    end
-    if evalin('base', 'exist(''dasFNumber'', ''var'') == 1')
-        dasFNumber = double(evalin('base', 'dasFNumber'));
-    else
-        dasFNumber = 0.71;
     end
     tgcGain                     = evalin('base', 'tgcGain');
     tgcControlPoints            = evalin('base', 'tgcControlPoints');
@@ -286,8 +274,7 @@ function setup()
     effusive.util.logMessage('Initializing image reconstruction...');
     ReconSpec.method = beamformerType;
     ReconSpec.beamformerType = beamformerType;
-    ReconSpec.dasFNumberAuto = dasFNumberAuto;
-    ReconSpec.dasFNumber = dasFNumber;
+    ReconSpec.dasFNumberAuto = true;
     ReconSpec.bfDataType          = 'complex single';
     ReconSpec.filterFrequencies   = logical(false);
     ReconSpec.nDims               = 2;
@@ -384,11 +371,6 @@ function setup()
     x_start_mm = single(ReconSpec.xAxis(1));
     x_end_mm   = single(ReconSpec.xAxis(end));
 
-    if isfield(ReconSpec, 'dasFNumber')
-        effectiveDasFNumber = single(ReconSpec.dasFNumber);
-    else
-        effectiveDasFNumber = single(NaN);
-    end
     cfMetaWrite( ...
         evalin('base', 'sharedMemoryNameMeta'), ...
         nz_out, ...
@@ -397,8 +379,7 @@ function setup()
         z_end_mm, ...
         x_start_mm, ...
         x_end_mm, ...
-        effusive.napari.metaRuntimeFlags(storeEchoFrameOutput, logical(false)), ...
-        effectiveDasFNumber ...
+        effusive.napari.metaRuntimeFlags(storeEchoFrameOutput, logical(false)) ...
     );
     effusive.util.logMessage('cf_meta written: nz=%d nx=%d z=[%.1f, %.1f] x=[%.1f, %.1f] mm', ...
         nz_out, nx_out, z_start_mm, z_end_mm, x_start_mm, x_end_mm);
@@ -600,9 +581,9 @@ function storageConfig = cfReadInitialStorageConfig(sharedMemoryNameCmd)
 end
 
 
-function cfMetaWrite(sharedMemoryName, nz, nx, zStartMm, zEndMm, xStartMm, xEndMm, runtimeFlags, dasFNumber)
+function cfMetaWrite(sharedMemoryName, nz, nx, zStartMm, zEndMm, xStartMm, xEndMm, runtimeFlags)
 % Write image geometry fields to the cf_meta shared memory segment.
-% Writes the setup-owned bytes of the 48-byte cf_meta segment (little-endian);
+% Writes the first 36 bytes of the 44-byte cf_meta segment (little-endian);
 % bytes 36:44 (`ensemble_time_s`, float64) stay zero-initialized here and
 % are populated per frame by `publishProcessedFrame`.
 %
@@ -616,7 +597,6 @@ function cfMetaWrite(sharedMemoryName, nz, nx, zStartMm, zEndMm, xStartMm, xEndM
 % [28:32] float32 x_end_mm
 % [32:36] uint32  runtime_flags (bit 0 = save active, bit 1 = freeze active)
 % [36:44] float64 ensemble_time_s (zero here; set by publishProcessedFrame)
-% [44:48] float32 das_f_number
 % ```
 
     sharedMemoryMeta = py.multiprocessing.shared_memory.SharedMemory( ...
@@ -631,9 +611,7 @@ function cfMetaWrite(sharedMemoryName, nz, nx, zStartMm, zEndMm, xStartMm, xEndM
         typecast(single(zEndMm),     'uint8'), ...  % z_end_mm      (4 bytes)
         typecast(single(xStartMm),   'uint8'), ...  % x_start_mm    (4 bytes)
         typecast(single(xEndMm),     'uint8'), ...  % x_end_mm      (4 bytes)
-        typecast(uint32(runtimeFlags), 'uint8'), ... % runtime_flags (4 bytes)
-        typecast(double(0),          'uint8'), ...  % ensemble_time_s (8 bytes)
-        typecast(single(dasFNumber), 'uint8') ... % das_f_number (4 bytes)
+        typecast(uint32(runtimeFlags), 'uint8') ... % runtime_flags (4 bytes)
     ];
 
     src = py.numpy.frombuffer(py.bytes(metaBytes), py.numpy.uint8);

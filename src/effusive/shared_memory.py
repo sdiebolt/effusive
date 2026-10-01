@@ -38,10 +38,7 @@ MAX_NZ = 512
 MAX_NX = 512
 
 META_FORMAT = "<QiiffffId"
-META_BASE_SIZE = struct.calcsize(META_FORMAT)
-META_RECON_FORMAT = "<f"
-META_RECON_OFFSET = META_BASE_SIZE
-# Byte layout (48 bytes; first 44 bytes are META_FORMAT, little-endian):
+# Byte layout (44 bytes, 9 unpacked values, little-endian):
 #   [0:8]    uint64  frame_counter     incremented by MATLAB per published frame
 #   [8:12]   int32   nz                image depth in pixels
 #   [12:16]  int32   nx                image width in pixels
@@ -51,8 +48,7 @@ META_RECON_OFFSET = META_BASE_SIZE
 #   [28:32]  float32 x_end_mm          lateral axis end (mm)
 #   [32:36]  uint32  runtime_flags     bitmask of META_FLAG_* values
 #   [36:44]  float64 ensemble_time_s   hardware ensemble timestamp (s)
-#   [44:48]  float32 das_f_number effective DAS receive f-number, NaN if unused.
-META_SIZE = META_BASE_SIZE + struct.calcsize(META_RECON_FORMAT)  # 48 bytes
+META_SIZE = struct.calcsize(META_FORMAT)  # 44 bytes
 
 META_FLAG_SAVE_ACTIVE = 1 << 0
 """Runtime flag bit indicating that EchoFrame is actively saving to disk."""
@@ -431,18 +427,6 @@ class ShmReader:
         buf = self._meta.buf
         assert buf is not None
         return struct.unpack_from(META_FORMAT, buf, 0)
-
-    def read_das_f_number(self) -> float:
-        """Read the effective DAS receive f-number from metadata.
-
-        Returns
-        -------
-        float
-            Effective DAS receive f-number, or NaN when unavailable.
-        """
-        buf = self._meta.buf
-        assert buf is not None
-        return struct.unpack_from(META_RECON_FORMAT, buf, META_RECON_OFFSET)[0]
 
     # -- Image data ---------------------------------------------------------
 
