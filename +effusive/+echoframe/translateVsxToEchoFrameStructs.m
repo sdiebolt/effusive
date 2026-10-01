@@ -34,6 +34,11 @@ function [ProbeSpec, TransmitSpec, ReceiveSpec] = translateVsxToEchoFrameStructs
     ProbeSpec.pitchX = Trans.spacingMm / 1e3;
     ProbeSpec.pitchY = 0;
     ProbeSpec.Fc = Trans.frequency * 1e6;
+    if isfield(Trans, 'ElementWidth')
+        ProbeSpec.elementWidth = Trans.ElementWidth * 1e-3;
+    elseif isfield(Trans, 'elementWidth')
+        ProbeSpec.elementWidth = Trans.elementWidth * 1e-3;
+    end
     ProbeSpec.element_position = Trans.ElementPos;
 
     steer = [TX.Steer] * 180 / pi;

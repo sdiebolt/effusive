@@ -163,9 +163,9 @@ def handle_svd(widget: "EffusiveWidget", value: int) -> None:
     None
         This helper updates the SVD spin box and writes a shared-memory command.
     """
-    widget._processing_panel._svd_spinbox.blockSignals(True)
-    widget._processing_panel._svd_spinbox.setValue(value)
-    widget._processing_panel._svd_spinbox.blockSignals(False)
+    widget._reconstruction_panel._svd_spinbox.blockSignals(True)
+    widget._reconstruction_panel._svd_spinbox.setValue(value)
+    widget._reconstruction_panel._svd_spinbox.blockSignals(False)
     widget._config.acquisition.svd_threshold_percent = value
     widget.write_shared_memory_command(
         svd_threshold=value,

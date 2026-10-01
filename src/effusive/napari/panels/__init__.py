@@ -11,6 +11,7 @@ from effusive.napari.panels.common import (
 from effusive.napari.panels.data import DataPanel
 from effusive.napari.panels.metadata import MetadataPanel
 from effusive.napari.panels.processing import ProcessingPanel
+from effusive.napari.panels.reconstruction import ReconstructionPanel
 from effusive.napari.panels.sequence import SequencePanel
 from effusive.napari.panels.stack import StackPanel
 from effusive.napari.panels.system import SystemPanel
@@ -19,6 +20,7 @@ __all__ = [
     "DataPanel",
     "MetadataPanel",
     "ProcessingPanel",
+    "ReconstructionPanel",
     "SequencePanel",
     "StackPanel",
     "SystemPanel",

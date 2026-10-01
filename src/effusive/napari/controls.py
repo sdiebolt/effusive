@@ -400,7 +400,9 @@ def refresh_control_locks(widget: "EffusiveWidget") -> None:
         Widget instance that owns all runtime controls.
     """
     # Guard: called during panel construction before all panels exist.
-    if not hasattr(widget, "_sequence_panel"):
+    if not hasattr(widget, "_sequence_panel") or not hasattr(
+        widget, "_reconstruction_panel"
+    ):
         return
 
     sync_save_controls(widget)
@@ -420,7 +422,9 @@ def refresh_control_locks(widget: "EffusiveWidget") -> None:
     widget._system_panel.set_debug_button_enabled(widget._run_button_state == "running")
     widget._metadata_panel.lock_session_fields(not startup_enabled)
     widget._sequence_panel.lock_for_run(not startup_enabled)
+    widget._reconstruction_panel.lock_for_run(not startup_enabled)
     widget._processing_panel.lock_for_recording(not record_locked_controls_enabled)
+    widget._reconstruction_panel.lock_for_recording(not record_locked_controls_enabled)
     widget._metadata_panel.lock_recording_fields(
         record_locked or widget._stack_panel._stack_active
     )
@@ -431,6 +435,7 @@ def refresh_control_locks(widget: "EffusiveWidget") -> None:
     disabled_fg = "#747486" if is_dark else "#8e8e9f"
     if widget._run_button_state == "ready":
         widget._system_panel.set_metadata_gate_locked(not run_ready)
+        widget._reconstruction_panel.set_metadata_gate_locked(not run_ready)
         run_btn.setEnabled(run_ready)
         run_btn.setToolTip(run_reason)
         run_btn.setObjectName("run_btn_start" if run_ready else "run_btn_disabled")
@@ -462,14 +467,22 @@ def refresh_control_locks(widget: "EffusiveWidget") -> None:
     )
 
     live_locked = not record_locked_controls_enabled
+    live_message = (
+        "Live parameters are locked while z-stack is active."
+        if widget._stack_panel._stack_active
+        else "Live parameters are locked while recording."
+        if record_locked
+        else "Live parameters stay available until recording starts."
+    )
     set_lock_hint_state(
         widget._processing_panel._live_lock_hint,
-        "Acquisition parameters are locked while z-stack is active."
-        if widget._stack_panel._stack_active
-        else "Acquisition parameters are locked while recording."
-        if record_locked
-        else "Acquisition parameters stay live until recording starts.",
+        live_message.replace("Live", "Acquisition"),
         live_locked,
+    )
+    set_lock_hint_state(
+        widget._reconstruction_panel._reconstruction_lock_hint,
+        "Beamformer is locked while Effusive is running. " + live_message,
+        (not startup_enabled) or live_locked,
     )
 
     set_lock_hint_state(

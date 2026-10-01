@@ -55,7 +55,10 @@ JSON config keys (all optional, defaults shown):
 - `nRepeats`: Ensemble size. Default: probe-specific.
 - `planewaveOpeningAngle`: Total steering angle range [deg]. Default: probe-specific.
 - `desiredEndDepthMm`: Imaging depth [mm]. Default: 12.
+- `speedOfSound`: Speed of sound [m/s]. Default: 1510.
 - `beamformerType`: EchoFrame beamformer, `Fourier` or `DAS`. Default: `Fourier`.
+- `dasFNumberAuto`: Compute DAS receive f-number from probe metadata. Default: false.
+- `dasFNumber`: Manual DAS receive f-number. Default: 0.71.
 - `tgcGain`: Initial TGC gain. Default: 900.
 - `tgcControlPoints`: Initial Verasonics TGC control points. Default: eight points at
   `tgcGain`.
@@ -158,7 +161,10 @@ def _defaults_from_config(probe_name: str | None = None) -> dict:
         "nRepeats": probe.n_repeats,
         "planewaveOpeningAngle": probe.planewave_opening_angle_deg,
         "desiredEndDepthMm": default_cfg.sequence.imaging_depth_mm,
+        "speedOfSound": default_cfg.sequence.speed_of_sound_m_s,
         "beamformerType": default_cfg.system.beamformer,
+        "dasFNumberAuto": default_cfg.system.das_f_number_auto,
+        "dasFNumber": default_cfg.system.das_f_number,
         "tgcGain": acq.tgc_control_points[0],
         "tgcControlPoints": list(acq.tgc_control_points),
         "stackMotorMinMm": stack.motor_min_mm,
@@ -315,7 +321,10 @@ def main(cfg: dict) -> None:
     eng.workspace["nRepeats"] = float(cfg["nRepeats"])
     eng.workspace["planewaveOpeningAngle"] = float(cfg["planewaveOpeningAngle"])
     eng.workspace["desiredEndDepthMm"] = float(cfg["desiredEndDepthMm"])
+    eng.workspace["speedOfSound"] = float(cfg.get("speedOfSound", 1510.0))
     eng.workspace["beamformerType"] = str(cfg.get("beamformerType", "Fourier"))
+    eng.workspace["dasFNumberAuto"] = bool(cfg.get("dasFNumberAuto", False))
+    eng.workspace["dasFNumber"] = float(cfg.get("dasFNumber", 0.71))
     eng.workspace["tgcGain"] = float(cfg["tgcGain"])
     eng.workspace["tgcControlPoints"] = matlab.double(
         [float(value) for value in cfg["tgcControlPoints"]]

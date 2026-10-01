@@ -63,7 +63,7 @@ class ProcessingPanel(QWidget):
         layout.setSpacing(8)
 
         self._live_lock_hint = make_lock_hint(
-            "Voltage, apertures, TGC, SVD, and crop stay live until recording starts."
+            "Voltage, apertures, TGC, and crop stay live until recording starts."
         )
         layout.addWidget(self._live_lock_hint)
 
@@ -147,25 +147,6 @@ class ProcessingPanel(QWidget):
         rx_row.addWidget(self._rx_aperture_spinbox)
         add_labeled_form_row(form, self._record_locked_labels, "RX aperture:", rx_row)
 
-        svd_row = QHBoxLayout()
-        self._svd_slider = QSlider(Qt.Orientation.Horizontal)
-        self._svd_slider.setRange(0, 100)
-        default_svd = int(
-            widget._worker_cfg.get("svdThreshold", proc_cfg.svd_threshold_percent)
-        )
-        self._svd_slider.setValue(default_svd)
-        self._svd_spinbox = QSpinBox()
-        self._svd_spinbox.setRange(0, 100)
-        self._svd_spinbox.setSuffix("%")
-        self._svd_spinbox.setValue(default_svd)
-        self._svd_slider.valueChanged.connect(lambda v: commands.handle_svd(widget, v))
-        self._svd_spinbox.valueChanged.connect(self._svd_slider.setValue)
-        svd_row.addWidget(self._svd_slider)
-        svd_row.addWidget(self._svd_spinbox)
-        add_labeled_form_row(
-            form, self._record_locked_labels, "SVD threshold:", svd_row
-        )
-
         layout.addLayout(form)
 
         tgc_group = QGroupBox("TGC")
@@ -246,8 +227,6 @@ class ProcessingPanel(QWidget):
             self._tx_aperture_spinbox,
             self._rx_aperture_slider,
             self._rx_aperture_spinbox,
-            self._svd_slider,
-            self._svd_spinbox,
             self._tgc_all_slider,
             self._tgc_all_spinbox,
             *self._tgc_sliders,
@@ -338,7 +317,10 @@ class ProcessingPanel(QWidget):
         self._voltage_slider.setValue(round(defaults.voltage_v * 10))
         self._tx_aperture_slider.setValue(defaults.tx_aperture_percent)
         self._rx_aperture_slider.setValue(defaults.rx_aperture_percent)
-        self._svd_slider.setValue(defaults.svd_threshold_percent)
+        if hasattr(widget, "_reconstruction_panel"):
+            widget._reconstruction_panel._svd_slider.setValue(
+                defaults.svd_threshold_percent
+            )
 
         self._updating_tgc_controls = True
         for slider, spin, value in zip(

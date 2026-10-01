@@ -53,7 +53,16 @@ def build_worker_config(widget: "EffusiveWidget") -> dict:
     config["nRepeats"] = sp._ensemble_slider.value()
     config["planewaveOpeningAngle"] = sp._angle_slider.value()
     config["desiredEndDepthMm"] = sp._depth_slider.value() / 10.0
-    config["beamformerType"] = widget._config.system.beamformer
+    config["speedOfSound"] = (
+        widget._reconstruction_panel._speed_of_sound_spinbox.value()
+    )
+    config["beamformerType"] = str(
+        widget._reconstruction_panel._beamformer_combo.currentData()
+    )
+    config["dasFNumberAuto"] = (
+        widget._reconstruction_panel._das_auto_checkbox.isChecked()
+    )
+    config["dasFNumber"] = widget._reconstruction_panel._das_f_number_spinbox.value()
     config["tgcGain"] = tgc_points[0]
     config["tgcControlPoints"] = tgc_points
     config["storagePath"] = widget._metadata_panel._storage_edit.text()
@@ -175,7 +184,7 @@ def start_acquisition(
         save_rf_time_tag=1 if dp._save_rf_time_tag_checkbox.isChecked() else 0,
         save_bf=1 if dp._save_bf_checkbox.isChecked() else 0,
         save_pdi=1 if dp._save_pdi_checkbox.isChecked() else 0,
-        svd_threshold=widget._processing_panel._svd_slider.value(),
+        svd_threshold=widget._reconstruction_panel._svd_slider.value(),
         freeze_req_id=widget.next_command_request_id("freeze"),
         save_req_id=widget.next_command_request_id("save"),
         svd_req_id=widget.next_command_request_id("svd"),

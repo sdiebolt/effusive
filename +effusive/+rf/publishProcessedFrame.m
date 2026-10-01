@@ -117,8 +117,7 @@ function publishProcessedFrame()
         FrameRuntimeState.publishRfSnapshot = false;
     end
 
-    % Update cf_meta: frame counter (bytes 1:8), runtime flags (33:36),
-    % ensemble time tag (37:44).
+    % Update cf_meta runtime fields; setup-owned bytes after 44 are preserved.
     storeEchoFrameOutput = evalin('base', 'storeEchoFrameOutput');
     freezeActive         = logical(evalin('base', 'freeze'));
     BidsRuntimeState     = evalin('base', 'BidsRuntimeState');
@@ -137,7 +136,7 @@ function publishProcessedFrame()
     );
     new_meta(37:44) = typecast(double(FrameRuntimeState.ensemble_time_s), 'uint8');
     src_meta  = py.numpy.frombuffer(py.bytes(new_meta), py.numpy.uint8);
-    % On Windows, shared memory is page-aligned (4096 bytes) but we only need 44.
+    % On Windows, shared memory is page-aligned (4096 bytes) but we only need cf_meta bytes.
     meta_buf  = py.numpy.ndarray( ...
         py.tuple({int32(numel(new_meta))}), ...
         dtype=py.numpy.uint8, buffer=sharedMemoryMeta.buf ...

@@ -291,6 +291,13 @@ def handle_timer_tick(widget: "EffusiveWidget") -> None:
     except Exception:
         return
 
+    try:
+        das_f_number = widget._shared_memory_reader.read_das_f_number()
+        if widget._reconstruction_panel._das_auto_checkbox.isChecked():
+            widget._reconstruction_panel.set_effective_das_f_number(das_f_number)
+    except Exception:
+        pass
+
     previous_save_active = widget._save_active
     previous_stack_active = widget._stack_panel._stack_active
     controls.apply_runtime_flags(widget, int(runtime_flags))

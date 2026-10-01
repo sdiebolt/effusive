@@ -22,6 +22,10 @@ class MotorController:
     port_name : str | None, optional
         Serial port backing the real controller. Dummy controllers leave this
         as `None`.
+    min_position_mm : float, optional
+        Minimum allowed motor position in millimetres.
+    max_position_mm : float, optional
+        Maximum allowed motor position in millimetres.
     """
 
     MM_PER_STEP = 0.047625e-3
@@ -255,6 +259,12 @@ def create_motor_controller(
     motor_port : str | None, optional
         Configured serial port for the real backend. If omitted, the function
         auto-selects the port when exactly one serial device is available.
+    min_position_mm : float | None, optional
+        Minimum allowed motor position in millimetres. If omitted, no lower
+        software limit is applied.
+    max_position_mm : float | None, optional
+        Maximum allowed motor position in millimetres. If omitted, no upper
+        software limit is applied.
 
     Returns
     -------

@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import (
     QCheckBox,
-    QComboBox,
     QFileDialog,
     QFormLayout,
     QGroupBox,
@@ -82,16 +81,6 @@ class SystemPanel(QWidget):
         )
         self._simulate_checkbox.toggled.connect(self._on_simulate_mode_changed)
         startup_form.addRow("Acquisition:", self._simulate_checkbox)
-
-        self._beamformer_combo = QComboBox()
-        self._beamformer_combo.addItems(["Fourier", "DAS"])
-        self._beamformer_combo.setCurrentText(widget._config.system.beamformer)
-        self._beamformer_combo.setToolTip(
-            "EchoFrame beamformer used when starting acquisition. DAS requires "
-            "an EchoFrame MEX built with EF_USE_FFDAS=ON."
-        )
-        self._beamformer_combo.currentTextChanged.connect(self._on_beamformer_changed)
-        startup_form.addRow("Beamformer:", self._beamformer_combo)
 
         self._udp_enable_checkbox = QCheckBox("Enable UDP control server")
         self._udp_enable_checkbox.setChecked(widget._config.system.udp_control_enabled)
@@ -272,7 +261,6 @@ class SystemPanel(QWidget):
             Whether the controls should be locked (disabled).
         """
         self._simulate_checkbox.setEnabled(not locked)
-        self._beamformer_combo.setEnabled(not locked)
         self._udp_enable_checkbox.setEnabled(not locked)
         self._udp_port_spinbox.setEnabled(not locked)
         self._matlab_root_edit.setEnabled(not locked)
@@ -306,7 +294,6 @@ class SystemPanel(QWidget):
         """
         if self._widget._run_button_state == "ready":
             self._simulate_checkbox.setEnabled(not locked)
-            self._beamformer_combo.setEnabled(not locked)
             self._udp_enable_checkbox.setEnabled(not locked)
             self._udp_port_spinbox.setEnabled(not locked)
             self._matlab_root_edit.setEnabled(not locked)
@@ -449,17 +436,6 @@ class SystemPanel(QWidget):
             Whether simulation mode should be enabled.
         """
         self._widget._config.system.simulate_mode = bool(checked)
-        cf_config.save_config(self._widget._config)
-
-    def _on_beamformer_changed(self, value: str) -> None:
-        """Persist the startup EchoFrame beamformer choice.
-
-        Parameters
-        ----------
-        value : str
-            Selected beamformer name.
-        """
-        self._widget._config.system.beamformer = value
         cf_config.save_config(self._widget._config)
 
     def _on_udp_enable_changed(self, checked: bool) -> None:

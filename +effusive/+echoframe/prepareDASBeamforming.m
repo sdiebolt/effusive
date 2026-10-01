@@ -70,5 +70,38 @@ function ReconSpec = prepareDASBeamforming(ProbeSpec, TransmitSpec, ReceiveSpec,
     ReconSpec.dasWavenum = single(4 * pi * double(ProbeSpec.Fc) / double(ReceiveSpec.Fs));
     ReconSpec.dasAlgorithm = int32(1);
     ReconSpec.dasComputeType = int32(0);
-    ReconSpec.dasSourceDirections = single(repmat([0; 0; 1; cosd(35)], 1, nActive));
+    if isfield(ReconSpec, 'dasFNumberAuto') && ReconSpec.dasFNumberAuto
+        fNumber = directivityFNumber(ProbeSpec, ReconSpec);
+    elseif isfield(ReconSpec, 'dasFNumber') && ~isempty(ReconSpec.dasFNumber)
+        fNumber = double(ReconSpec.dasFNumber);
+    else
+        fNumber = 0.71;
+    end
+    coneAngleDeg = rad2deg(atan(1 / (2 * fNumber)));
+    ReconSpec.dasFNumber = single(fNumber);
+    ReconSpec.dasSourceDirections = single(repmat([0; 0; 1; cosd(coneAngleDeg)], 1, nActive));
+end
+
+function fNumber = directivityFNumber(ProbeSpec, ReconSpec)
+% Return the -3 dB piston-element directivity receive f-number.
+
+    if isfield(ProbeSpec, 'elementWidth') && ~isempty(ProbeSpec.elementWidth)
+        width = double(ProbeSpec.elementWidth);
+    else
+        width = double(ProbeSpec.pitchX);
+        effusive.util.logMessage( ...
+            'Warning: DAS auto f-number missing element width; using pitch %.3g mm as width fallback.', ...
+            width * 1e3 ...
+        );
+    end
+    lambda = double(ReconSpec.c0) / double(ProbeSpec.Fc);
+    theta = linspace(0, pi / 2 - 1e-3, 4096);
+    directivity = abs(cos(theta) .* sinc(width / lambda * sin(theta)));
+    idx = find(directivity <= 0.71, 1, 'first');
+    if isempty(idx)
+        alpha = theta(end);
+    else
+        alpha = theta(idx);
+    end
+    fNumber = 1 / (2 * tan(alpha));
 end
