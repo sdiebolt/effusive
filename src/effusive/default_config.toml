@@ -7,6 +7,8 @@ matlab_root = ""
 vantage_root = ""
 echoframe_mex_root = ""
 beamformer = "Fourier"
+das_f_number_auto = false
+das_f_number = 0.71
 simulate_mode = true
 udp_control_enabled = true
 udp_control_port = 1025
@@ -35,6 +37,7 @@ planewave_opening_angle_deg = 20
 [sequence]
 transmit_pulse_length = 3
 imaging_depth_mm = 12.0
+speed_of_sound_m_s = 1510.0
 
 [acquisition]
 voltage_v = 1.6

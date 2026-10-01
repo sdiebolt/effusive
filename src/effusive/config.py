@@ -78,6 +78,10 @@ class SystemConfig:
         Optional EchoFrame runtime-MEX files directory override.
     beamformer : str
         EchoFrame beamformer selected at startup (`Fourier` or `DAS`).
+    das_f_number_auto : bool
+        Whether DAS receive f-number is computed from probe metadata.
+    das_f_number : float
+        Manual DAS receive f-number.
     simulate_mode : bool
         Whether simulate mode is on at startup.
     udp_control_enabled : bool
@@ -92,6 +96,8 @@ class SystemConfig:
     vantage_root: str = ""
     echoframe_mex_root: str = ""
     beamformer: str = "Fourier"
+    das_f_number_auto: bool = False
+    das_f_number: float = 0.71
     simulate_mode: bool = True
     udp_control_enabled: bool = True
     udp_control_port: int = 1025
@@ -107,10 +113,13 @@ class SequenceConfig:
         Default pulse length in half-cycles.
     imaging_depth_mm : float
         Default desired end depth in millimetres.
+    speed_of_sound_m_s : float
+        Speed of sound used for sequence timing and reconstruction.
     """
 
     transmit_pulse_length: int
     imaging_depth_mm: float
+    speed_of_sound_m_s: float
 
 
 @dataclass
@@ -287,6 +296,17 @@ def _config_from_dict(data: dict) -> EffusiveConfig:
 
     system_data = dict(default_data.get("system", {}))
     system_data.update(data.get("system", {}))
+    if "das_cone_angle_auto" in system_data:
+        system_data["das_f_number_auto"] = system_data.pop("das_cone_angle_auto")
+    if "das_cone_angle_deg" in system_data:
+        angle_rad = system_data.pop("das_cone_angle_deg") * 3.141592653589793 / 180.0
+        system_data["das_f_number"] = 1.0 / (2.0 * math.tan(angle_rad))
+
+    sequence_data = dict(default_data.get("sequence", {}))
+    sequence_data.update(data.get("sequence", {}))
+
+    acquisition_data = dict(default_data.get("acquisition", {}))
+    acquisition_data.update(data.get("acquisition", {}))
 
     return EffusiveConfig(
         probe_names=data["probe_names"],
@@ -295,8 +315,8 @@ def _config_from_dict(data: dict) -> EffusiveConfig:
             name: ProbeConfig(**probe_data)
             for name, probe_data in data.get("probe_defaults", {}).items()
         },
-        sequence=SequenceConfig(**data["sequence"]),
-        acquisition=AcquisitionConfig(**data["acquisition"]),
+        sequence=SequenceConfig(**sequence_data),
+        acquisition=AcquisitionConfig(**acquisition_data),
         stack=StackConfig(**stack_data),
         bids=BidsConfig(**bids_data),
         crop=CropConfig(vertices=data.get("crop", {}).get("vertices", [])),
@@ -325,6 +345,8 @@ def _config_to_dict(config: EffusiveConfig) -> dict:
             "vantage_root": config.system.vantage_root,
             "echoframe_mex_root": config.system.echoframe_mex_root,
             "beamformer": config.system.beamformer,
+            "das_f_number_auto": config.system.das_f_number_auto,
+            "das_f_number": config.system.das_f_number,
             "simulate_mode": config.system.simulate_mode,
             "udp_control_enabled": config.system.udp_control_enabled,
             "udp_control_port": config.system.udp_control_port,
@@ -342,6 +364,7 @@ def _config_to_dict(config: EffusiveConfig) -> dict:
         "sequence": {
             "transmit_pulse_length": config.sequence.transmit_pulse_length,
             "imaging_depth_mm": config.sequence.imaging_depth_mm,
+            "speed_of_sound_m_s": config.sequence.speed_of_sound_m_s,
         },
         "acquisition": {
             "voltage_v": config.acquisition.voltage_v,
@@ -484,7 +507,12 @@ def update_config_from_widget(widget: "EffusiveWidget") -> None:
             widget._system_panel._udp_enable_checkbox.isChecked()
         )
         cfg.system.udp_control_port = widget._system_panel._udp_port_spinbox.value()
-        cfg.system.beamformer = widget._system_panel._beamformer_combo.currentText()
+    if hasattr(widget, "_reconstruction_panel"):
+        rp = widget._reconstruction_panel
+        cfg.system.beamformer = str(rp._beamformer_combo.currentData())
+        cfg.system.das_f_number_auto = rp._das_auto_checkbox.isChecked()
+        if not cfg.system.das_f_number_auto:
+            cfg.system.das_f_number = rp._das_f_number_spinbox.value()
     if hasattr(widget, "_sequence_panel"):
         cfg.system.default_probe = widget._sequence_panel._probe_combo.currentText()
     if hasattr(widget, "_system_panel"):
@@ -510,15 +538,22 @@ def update_config_from_widget(widget: "EffusiveWidget") -> None:
         probe.planewave_opening_angle_deg = sp._angle_slider.value()
         cfg.sequence.transmit_pulse_length = sp._pulse_slider.value()
         cfg.sequence.imaging_depth_mm = sp._depth_slider.value() / 10.0
+    if hasattr(widget, "_reconstruction_panel"):
+        cfg.sequence.speed_of_sound_m_s = (
+            widget._reconstruction_panel._speed_of_sound_spinbox.value()
+        )
 
     if hasattr(widget, "_processing_panel"):
         pp = widget._processing_panel
         cfg.acquisition.voltage_v = pp._voltage_slider.value() / 10.0
         cfg.acquisition.tx_aperture_percent = pp._tx_aperture_slider.value()
         cfg.acquisition.rx_aperture_percent = pp._rx_aperture_slider.value()
-        cfg.acquisition.svd_threshold_percent = pp._svd_slider.value()
         if len(pp._tgc_sliders) == 8:
             cfg.acquisition.tgc_control_points = [s.value() for s in pp._tgc_sliders]
+    if hasattr(widget, "_reconstruction_panel"):
+        cfg.acquisition.svd_threshold_percent = (
+            widget._reconstruction_panel._svd_slider.value()
+        )
 
     if hasattr(widget, "_stack_panel"):
         stp = widget._stack_panel

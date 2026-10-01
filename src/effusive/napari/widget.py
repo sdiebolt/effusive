@@ -40,6 +40,7 @@ from effusive.napari.panels import (
     DataPanel,
     MetadataPanel,
     ProcessingPanel,
+    ReconstructionPanel,
     SequencePanel,
     StackPanel,
     SystemPanel,
@@ -421,6 +422,7 @@ class EffusiveWidget(QWidget):
         self._metadata_panel = MetadataPanel(self)
         self._sequence_panel = SequencePanel(self)
         self._processing_panel = ProcessingPanel(self)
+        self._reconstruction_panel = ReconstructionPanel(self)
         self._stack_panel = StackPanel(self)
         self._data_panel = DataPanel(self)
         self._metadata_panel.refresh_previews()
@@ -430,6 +432,7 @@ class EffusiveWidget(QWidget):
             self._metadata_panel,
             self._sequence_panel,
             self._processing_panel,
+            self._reconstruction_panel,
             self._stack_panel,
             self._data_panel,
         ]
@@ -438,6 +441,7 @@ class EffusiveWidget(QWidget):
             ("Storage", "hard-drive"),
             ("Sequence", "audio-waveform"),
             ("Acquisition", "sliders-horizontal"),
+            ("Reconstruction", "grid-3x3"),
             ("Z-stack", "layers"),
             ("Record", "aperture"),
         ]
