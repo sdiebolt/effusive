@@ -72,7 +72,8 @@ function ReconSpec = prepareFourierBeamforming(ProbeSpec, TransmitSpec, ReceiveS
             frequencyAxis = fftshift(frequencyAxis(lowerBound:upperBound));
             freqMapping = fftshift(1:nZ / 8);
         case 'BS67BW'
-            lowerBound = nZ / 2;
+            % The negative-frequency half starts after the positive half in FFT order.
+            lowerBound = nZ / 2 + 1;
             upperBound = lowerBound + nZ / 4 - 1;
             kzVector = fftshift(kzVector(lowerBound:upperBound));
             frequencyAxis = frequencyAxis(lowerBound:upperBound);

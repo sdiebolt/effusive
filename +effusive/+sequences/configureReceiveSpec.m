@@ -89,7 +89,11 @@ end
         case 'NS200BW'
             ReceiveSpec.samples_per_wavelength = 4;
     end
-    ReceiveSpec.Fs_iq = ReceiveSpec.Fs_base * ReceiveSpec.samples_per_wavelength / 4;
+    ReceiveSpec.Fs_iq = transFrequencyMHz * 1e6 * ReceiveSpec.samples_per_wavelength;
+    if strcmp(samplingMode, 'BS67BW')
+        % Bandpass sampling has no quadrature decimation after the input filter.
+        ReceiveSpec.Fs_base = ReceiveSpec.Fs_iq;
+    end
     ReceiveSpec.sampling_mode = samplingMode;
 
     % Depth and buffer sizing.
