@@ -17,6 +17,7 @@ from qtpy import QtGui
 from qtpy.QtCore import QEasingCurve, QPropertyAnimation, QSize, Qt, QTimer
 from qtpy.QtGui import QFont
 from qtpy.QtWidgets import (
+    QWIDGETSIZE_MAX,
     QDockWidget,
     QHBoxLayout,
     QLabel,
@@ -183,17 +184,29 @@ class EffusiveWidget(QWidget):
         QTimer.singleShot(0, lambda: crop_helpers.configure_crop_layer_controls(self))
 
     def _restore_dock_size_policy(self) -> None:
-        """Keep the widget filling napari's vertical dock area.
+        """Keep the widget and its enclosing dock filling the available height.
 
         Returns
         -------
         None
-            The widget size policy is updated in place.
+            Size policies and the enclosing dock's height cap are updated in place.
         """
         self.setSizePolicy(
             QSizePolicy.Policy.MinimumExpanding,
             QSizePolicy.Policy.Expanding,
         )
+        self.updateGeometry()
+        dock = self.parentWidget()
+        while dock is not None and not isinstance(dock, QDockWidget):
+            dock = dock.parentWidget()
+        if dock is not None:
+            # Napari applies restrictive dock sizing after plugin construction.
+            dock.setSizePolicy(
+                QSizePolicy.Policy.MinimumExpanding,
+                QSizePolicy.Policy.Expanding,
+            )
+            dock.setMaximumHeight(QWIDGETSIZE_MAX)
+            dock.updateGeometry()
 
     # ------------------------------------------------------------------
     # Theme
