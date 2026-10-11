@@ -17,6 +17,7 @@ from qtpy import QtGui
 from qtpy.QtCore import QEasingCurve, QPropertyAnimation, QSize, Qt, QTimer
 from qtpy.QtGui import QFont
 from qtpy.QtWidgets import (
+    QWIDGETSIZE_MAX,
     QDockWidget,
     QHBoxLayout,
     QLabel,
@@ -412,7 +413,6 @@ class EffusiveWidget(QWidget):
     def _make_accordion(self) -> QWidget:
         """Build the stacked accordion panel container."""
         container = QWidget()
-        setattr(container, "_anims", [])
         layout = QVBoxLayout(container)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
@@ -468,19 +468,39 @@ class EffusiveWidget(QWidget):
             self._accordion_buttons.append((btn, icon_name))
         layout.addStretch(1)
 
-        setattr(container, "_anims", [])
+        panel_anims: dict[QWidget, QPropertyAnimation] = {}
         _ACCORDION_ANIMATION_DURATION_MS = 200  # ms
 
-        def _drop_anim(a: QPropertyAnimation) -> None:
-            anims = cast(list[QPropertyAnimation], getattr(container, "_anims"))
-            try:
-                anims.remove(a)
-            except ValueError:
-                pass
+        def _animate_panel(
+            panel: QWidget, start: int, end: int, *, hide_on_done: bool
+        ) -> None:
+            """Replace the panel's animation and ignore superseded completions."""
+            previous = panel_anims.pop(panel, None)
+            if previous is not None:
+                previous.stop()
+            anim = QPropertyAnimation(panel, b"maximumHeight")
+            anim.setDuration(_ACCORDION_ANIMATION_DURATION_MS)
+            anim.setStartValue(start)
+            anim.setEndValue(end)
+            anim.setEasingCurve(QEasingCurve.Type.InOutCubic)
+            panel_anims[panel] = anim
+
+            def _on_done() -> None:
+                """Apply completion only if this is still the panel's animation."""
+                if panel_anims.get(panel) is not anim:
+                    return
+                del panel_anims[panel]
+                if hide_on_done:
+                    panel.hide()
+                panel.setMaximumHeight(QWIDGETSIZE_MAX)
+
+            anim.finished.connect(_on_done)
+            anim.start()
 
         def _activate(idx: int) -> None:
-            already_open = panel_list[idx].isVisible()
-            target = -1 if already_open else idx
+            """Animate toward the latest button selection, not transient visibility."""
+            # A collapsing panel remains visible, but its button is already unchecked.
+            target = idx if btns[idx].isChecked() else -1
             available_h = max(container.height() - sum(b.height() for b in btns), 50)
 
             for j, (b, p) in enumerate(zip(btns, panel_list)):
@@ -489,46 +509,13 @@ class EffusiveWidget(QWidget):
                 b.setChecked(active)
                 b.blockSignals(False)
 
-                if active and not p.isVisible():
-                    p.setMaximumHeight(0)
+                if active and (not p.isVisible() or p in panel_anims):
+                    start = p.height() if p.isVisible() else 0
+                    p.setMaximumHeight(start)
                     p.show()
-                    a = QPropertyAnimation(p, b"maximumHeight")
-                    a.setDuration(_ACCORDION_ANIMATION_DURATION_MS)
-                    a.setStartValue(0)
-                    a.setEndValue(available_h)
-                    a.setEasingCurve(QEasingCurve.Type.InOutCubic)
-
-                    def _on_expand_done(
-                        panel: QWidget = p, anim: QPropertyAnimation = a
-                    ) -> None:
-                        panel.setMaximumHeight(16777215)
-                        _drop_anim(anim)
-
-                    a.finished.connect(_on_expand_done)
-                    cast(list[QPropertyAnimation], getattr(container, "_anims")).append(
-                        a
-                    )
-                    a.start()
-
+                    _animate_panel(p, start, available_h, hide_on_done=False)
                 elif not active and p.isVisible():
-                    a = QPropertyAnimation(p, b"maximumHeight")
-                    a.setDuration(_ACCORDION_ANIMATION_DURATION_MS)
-                    a.setStartValue(p.height())
-                    a.setEndValue(0)
-                    a.setEasingCurve(QEasingCurve.Type.InOutCubic)
-
-                    def _on_collapse_done(
-                        panel: QWidget = p, anim: QPropertyAnimation = a
-                    ) -> None:
-                        panel.hide()
-                        panel.setMaximumHeight(16777215)
-                        _drop_anim(anim)
-
-                    a.finished.connect(_on_collapse_done)
-                    cast(list[QPropertyAnimation], getattr(container, "_anims")).append(
-                        a
-                    )
-                    a.start()
+                    _animate_panel(p, p.height(), 0, hide_on_done=True)
 
         for i, btn in enumerate(btns):
             btn.clicked.connect(lambda _checked, i=i: _activate(i))
