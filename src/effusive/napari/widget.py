@@ -6,6 +6,7 @@ import datetime
 import queue
 import struct
 import subprocess
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from typing import Any, cast
 
@@ -181,6 +182,7 @@ class EffusiveWidget(QWidget):
             self._on_active_layer_changed
         )
         QTimer.singleShot(0, self._restore_dock_size_policy)
+        QTimer.singleShot(0, self._setup_dock_title)
         QTimer.singleShot(0, lambda: crop_helpers.configure_crop_layer_controls(self))
 
     def _restore_dock_size_policy(self) -> None:
@@ -207,6 +209,31 @@ class EffusiveWidget(QWidget):
             )
             dock.setMaximumHeight(QWIDGETSIZE_MAX)
             dock.updateGeometry()
+
+    def _setup_dock_title(self) -> None:
+        """Show the installed version in the native and napari dock titles."""
+        dock = self.parentWidget()
+        while dock is not None and not isinstance(dock, QDockWidget):
+            dock = dock.parentWidget()
+        if dock is None:
+            return
+        try:
+            installed_version = version("effusive")
+        except PackageNotFoundError:
+            installed_version = "dev"
+        title = f"Effusive v{installed_version}"
+
+        def _update_title() -> None:
+            """Update napari's custom label as well as the dock's window title."""
+            dock.setWindowTitle(title)
+            label = getattr(dock.titleBarWidget(), "title", None)
+            if isinstance(label, QLabel):
+                label.setText(title)
+
+        _update_title()
+        # Napari recreates its custom title bar when floating or changing dock area.
+        dock.topLevelChanged.connect(_update_title)
+        dock.dockLocationChanged.connect(_update_title)
 
     # ------------------------------------------------------------------
     # Theme
