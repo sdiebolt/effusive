@@ -124,6 +124,10 @@ class MetadataPanel(QWidget):
         layout.setSpacing(8)
 
         storage_form = QFormLayout()
+        storage_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        storage_form.setFieldGrowthPolicy(
+            QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
+        )
         storage_form.setSpacing(6)
         self._storage_edit = QLineEdit(
             widget._worker_cfg.get("storagePath", widget._config.system.storage_path)
@@ -184,6 +188,10 @@ class MetadataPanel(QWidget):
 
         recording_group = QGroupBox("Recording")
         recording_form = QFormLayout(recording_group)
+        recording_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        recording_form.setFieldGrowthPolicy(
+            QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
+        )
         recording_form.setSpacing(6)
         recording_form.setContentsMargins(8, 12, 8, 8)
 

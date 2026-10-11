@@ -102,6 +102,8 @@ class StackPanel(QWidget):
         layout.addWidget(preview_group)
 
         form = QFormLayout()
+        form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         form.setSpacing(6)
 
         self._stack_backend_combo = QComboBox()

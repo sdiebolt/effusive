@@ -68,6 +68,8 @@ class ProcessingPanel(QWidget):
         layout.addWidget(self._live_lock_hint)
 
         form = QFormLayout()
+        form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         form.setSpacing(6)
 
         proc_cfg = widget._config.acquisition
@@ -170,6 +172,10 @@ class ProcessingPanel(QWidget):
 
         tgc_group = QGroupBox("TGC")
         tgc_layout = QFormLayout(tgc_group)
+        tgc_layout.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        tgc_layout.setFieldGrowthPolicy(
+            QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
+        )
         tgc_layout.setSpacing(6)
         initial_tgc_points = self.get_initial_tgc_points()
         saved_all_gain = proc_cfg.tgc_all_gain

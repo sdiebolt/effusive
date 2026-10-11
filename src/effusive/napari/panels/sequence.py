@@ -59,6 +59,8 @@ class SequencePanel(QWidget):
         layout.addWidget(self._sequence_lock_hint)
 
         form = QFormLayout()
+        form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         form.setSpacing(6)
 
         probe_names = widget._config.probe_names

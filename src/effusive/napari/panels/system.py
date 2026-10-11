@@ -71,6 +71,10 @@ class SystemPanel(QWidget):
 
         startup_group = QGroupBox("Startup options")
         startup_form = QFormLayout(startup_group)
+        startup_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        startup_form.setFieldGrowthPolicy(
+            QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
+        )
         startup_form.setSpacing(6)
         startup_form.setContentsMargins(8, 12, 8, 8)
 
@@ -102,6 +106,10 @@ class SystemPanel(QWidget):
 
         paths_group = QGroupBox("System paths")
         paths_form = QFormLayout(paths_group)
+        paths_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        paths_form.setFieldGrowthPolicy(
+            QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
+        )
         paths_form.setSpacing(6)
         paths_form.setContentsMargins(8, 12, 8, 8)
 
