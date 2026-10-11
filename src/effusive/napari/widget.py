@@ -44,6 +44,7 @@ from effusive.napari.panels import (
     StackPanel,
     SystemPanel,
 )
+from effusive.napari.qt import install_no_scroll_wheel_filter
 from effusive.napari.theme import (
     ACCENT_DARK,
     ACCENT_LIGHT,
@@ -529,6 +530,7 @@ class EffusiveWidget(QWidget):
         for i, btn in enumerate(btns):
             btn.clicked.connect(lambda _checked, i=i: _activate(i))
 
+        install_no_scroll_wheel_filter(container)
         return container
 
     def _make_log_section(self) -> QWidget:
